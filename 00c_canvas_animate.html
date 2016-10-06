@@ -1,0 +1,68 @@
+<!DOCTYPE HTML>
+<html>
+
+  <body>
+    <canvas id="myCanvas" width="1000" height="1000"></canvas>
+
+    <script>
+
+		var canvas = document.getElementById("myCanvas");
+		var context = canvas.getContext('2d');
+		var frameCount = 0;
+		context.font = "30px Verdana";
+		var dt = 0;
+		var t = 0;
+
+    var N = 40;
+    var x = [];
+    var y = [];
+    var c = [];
+    var phi = [];
+    for (var i=0; i<N; i++) {
+      phi[i] = 0;
+      x[i] = Math.round(Math.random()*canvas.width);
+      y[i] = Math.round(Math.random()*canvas.height);
+      c[i] = [Math.round(Math.random()*255),
+              Math.round(Math.random()*255),
+              Math.round(Math.random()*255)];
+    }
+    
+    var R = 3;
+
+    context.fillStyle = "#000000";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    var draw = function() {
+
+			var newT = performance.now();
+			dt = newT - t;
+			t = newT;
+
+      context.fillStyle = "#000000";
+      //context.fillRect(0, 0, canvas.width, canvas.height);
+      
+      
+      for (var i=0; i<N; i++) {
+        context.strokeStyle = "rgb("+c[i%4][0]+","+c[i%4][1]+","+c[i%4][2]+")";
+        context.beginPath();
+        context.moveTo(x[i], y[i]);
+        x[i] += Math.sin(phi[i])*R;
+        y[i] += Math.cos(phi[i])*R;
+        phi[i] += (0.02+i*0.02)*frameCount;
+        context.lineTo(x[i],y[i]);
+
+        context.lineWidth = 1;
+        context.stroke();
+      }
+
+      frameCount = frameCount+1;
+      requestAnimationFrame(draw);
+    };
+
+      	draw();
+
+    </script>
+
+  </body>
+
+</html>      

@@ -1,0 +1,79 @@
+<!DOCTYPE HTML>
+<html>
+
+  <body>
+    <canvas id="myCanvas" width="1000" height="1000"></canvas>
+
+    <script>
+
+    	var canvas;
+    	var context;
+    	var frameCount;
+
+    	// delta time from last frame
+    	var dt;
+
+    	// time of the last frame
+    	var lastTime;
+
+    	var setup = function() {
+			canvas = document.getElementById("myCanvas");
+			context = canvas.getContext('2d');
+			context.font = "30px Verdana";
+			frameCount = 0;
+			lastTime = 0;
+		}	
+
+    	var draw = function() {
+
+    		var x = frameCount;
+    		var y = frameCount;
+
+    		// clear canvas
+    		context.fillStyle = "rgba(255,255,255,1.0)";
+    		context.fillRect (0, 0, canvas.width, canvas.height);
+			
+			x = 0;
+			y = 0;
+			// draw moving rect
+			context.fillStyle = "#000000";
+			for (var i=0; i<30; i++) {
+				for (var j=0; j<30; j++) {
+					var r = i*15;
+					var g = Math.round(Math.random()*100);
+					var b = Math.round(Math.random()*100);
+					context.fillStyle = "rgb("+r+","+g+","+b+")"
+    				var s = (j%5)*5+3;
+    				context.fillRect (x+i*15, y+j*15, s, 8);
+				}
+			}
+			
+
+			// get the current in time in ms
+			var currentTime = performance.now();
+
+			// calculate delta time in ms
+			dt = currentTime - lastTime;
+			lastTime = currentTime;
+
+			// calculate fps
+			if (frameCount%10==0)
+				fps = Math.round(1000.0 / dt);
+			context.strokeStyle = "#000000";
+			context.fillText(fps+" fps", 500, 50);
+
+
+			frameCount = frameCount+1;
+
+			// when drawing ready request next frame
+        	requestAnimationFrame(draw);
+        };
+
+        setup();
+      	draw();
+
+    </script>
+
+  </body>
+
+</html>      

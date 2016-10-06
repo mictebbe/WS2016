@@ -1,0 +1,59 @@
+<!DOCTYPE HTML>
+<html>
+
+  <body>
+    <canvas id="myCanvas" width="1000" height="1000"></canvas>
+
+    <script>
+
+		// get the context
+		var canvas = document.getElementById("myCanvas");
+		var context = canvas.getContext('2d');
+
+		// set color in "rgb()" style, color have to be 
+		// ints from 0...255, alpha 0.0 ... 1.0
+		var g = 255;
+		context.fillStyle = "rgb(0,"+g+",0)";
+		context.fillRect(0, 0, 200, 200);
+
+		context.fillRect(300, 0, 200, 200);
+
+
+		// set color in HTML style
+		context.fillStyle = "#ff0000";
+		context.fillRect(350, 100, 50, 50);
+
+		// draw quarter circle with center (100,100) 
+		// and radius 50 as line
+		context.strokeStyle = "#ffffff";
+		context.lineWidth = 10;
+		context.arc(100, 100, 50, 0, Math.PI/2);
+		context.stroke();
+
+		// set line color in HTML style
+		context.strokeStyle = "#0000ff";
+		context.lineWidth = 5;
+
+		// draw line from (200,200) to (400,400)
+		context.beginPath();
+		context.moveTo(200,200);
+		context.lineTo(400,400);
+		context.lineTo(400,200);
+		context.closePath();
+		context.stroke();
+
+		// begin path resets points list
+		context.beginPath();
+		context.moveTo(300,800);
+		context.lineTo(200,900);
+		context.stroke();
+
+		// draw text
+		context.font = "30px Verdana";
+	    context.fillText("hello", 100, 400);
+
+    </script>
+
+  </body>
+
+</html>      
