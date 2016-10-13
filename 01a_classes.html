@@ -1,0 +1,110 @@
+<!DOCTYPE HTML>
+<html>
+
+  <body>
+    <canvas id="myCanvas" width="1000" height="1000"></canvas>
+
+    <script>
+
+		// get the context
+		var canvas = document.getElementById("myCanvas");
+		var context = canvas.getContext('2d');
+		var frameCount = 0;
+		var polygons = [];
+
+		// polygon class ctor, n points radius r
+		var Polygon = function (x, y, n, r, phi0=0, speed=0) {
+			this.n = n;
+			this.r = r;
+			this.x = x;
+			this.y = y;
+
+			this.color = {r : 0,
+						  g : 0,
+						  b : 0};
+
+			this.points = [];
+			this.phi0 = phi0;
+			this.speed = speed;
+			// calculate points of polygon
+			for (var i=0; i<n+1; i++) {
+				var phi = Math.PI * 2 * i / this.n;
+				var point = {
+					x : this.r*Math.sin(phi),
+					y : this.r*Math.cos(phi)
+				};
+				this.points.push(point);
+			}
+		}
+
+		Polygon.prototype.setColor = function (r,g,b) {
+			this.color.r = r;
+			this.color.g = g; 
+			this.color.b = b;
+		}
+
+		// iterate points and draw
+		Polygon.prototype.draw = function (time) {
+			
+			context.strokeStyle = "rgb("+this.color.r+","+this.color.g+","+this.color.b+")";
+			var phiRotate = this.speed*time;
+			context.save();
+			context.translate(this.x, this.y);
+			context.rotate(this.phi0 + phiRotate);
+			context.beginPath();
+			for (var i=0; i<this.n+1; i++) {
+				context.lineTo(this.points[i].x, this.points[i].y);
+			}
+			context.stroke();
+			context.restore();
+		}
+
+
+
+		var setup = function() {
+
+			var polygonOffset = new Polygon(400,250, 4, 150, 0, 0);
+				
+			for (var j=0; j<240; j++) {
+
+				var x = polygonOffset.points[j%4].x + polygonOffset.x;
+				var y = polygonOffset.points[j%4].y + polygonOffset.y;
+				var N = j%4+3;
+
+				var speed = Math.sin(j*0.02)*0.01;
+				var phi0 = 0;
+				var R = 50+Math.sin(j*0.05)*50; //Math.random()*50+50;
+				polygons[j] = new Polygon(x, y, N, R, phi0, speed);
+				
+				if (j%4==0)
+					polygons[j].setColor(255,0,0);
+			}
+		}	
+
+    	var draw = function() {
+
+    		// clear canvas
+    		context.fillStyle = "rgba(255,255,255,1.0)";
+    		context.fillRect (0, 0, canvas.width, canvas.height);
+
+			
+    		for (var i=0; i<polygons.length; i++) {			
+				polygons[i].draw(frameCount);
+    		}
+
+			frameCount = frameCount+1;
+
+			// when drawing ready request next frame
+        	requestAnimationFrame(draw);
+        };
+
+        setup();
+      	draw();
+		
+
+
+    </script>
+
+  </body>
+
+</html>      

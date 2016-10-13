@@ -1,0 +1,116 @@
+<!DOCTYPE HTML>
+<html>
+
+  <body>
+    <canvas id="myCanvas" width="1000" height="1000"></canvas>
+
+    <script>
+
+		var canvas = document.getElementById("myCanvas");
+		var context = canvas.getContext('2d');
+		var frameCount = 0;
+		
+    context.fillStyle = "#000000";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+
+    var Scope = function (l, nch) {
+      this.l = l;
+      this.index = 0;
+      this.data = [];
+      this.nch = nch;
+      for (var ch=0; ch<nch; ch++) {
+        this.data[ch] = [];
+        for (var i=0; i<l; i++)
+          this.data[ch].push(0);
+      }
+    }
+
+    
+    Scope.prototype.draw = function() {
+      for (var ch=0; ch<this.nch; ch++) {
+        context.beginPath();
+      
+        for (var i=0; i<this.l; i++) {
+          context.lineTo (i,this.data[ch][i]+ch*130);
+        }
+        context.stroke();
+      }
+    }
+
+    Scope.prototype.addDataPoint = function(v, ch) {
+      this.data[ch][this.index] = v;
+    }
+
+
+    
+    var sc = new Scope(600, 2);
+    var setup = function() { 
+    
+    }
+
+    function saw (phase) {
+      return (phase % (Math.PI*2)) / 2 / Math.PI;
+    }
+
+    var constrain = function (v, min, max) {
+      if (v<min) return min;
+      if (v>max) return max;
+      return v;
+    }
+
+    var blend = function (v0, v1, t) {
+      return (1-t)*v0 + t*v1;
+    }
+
+    var update = function() {
+
+      var f = 0.04;
+      var A = 50;
+      var v;
+
+      v = Math.sin(frameCount*f)*A;
+      sc.addDataPoint(v,0);
+
+      var v1 = saw(f*3*frameCount)*100;
+
+      // scale + offset t in range
+      t = Math.sin(frameCount*0.002+Math.PI*3/2)*0.5+0.5;
+
+      var vblend = blend(v, v1, t);
+
+      sc.addDataPoint(vblend,1);
+      
+      sc.index = (sc.index+1)%sc.l;
+
+      frameCount = frameCount+1;
+    }
+
+    var draw = function() {
+
+      for (var i=0; i<5; i++)
+        update();
+
+      context.fillStyle = "#000000";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      context.lineWidth = 4;
+      context.strokeStyle = "#ffffff";
+
+      context.save();
+      context.translate(100,250);
+
+      sc.draw();
+
+      context.restore();
+      requestAnimationFrame(draw);
+    };
+
+    setup();
+    draw();
+
+    </script>
+
+  </body>
+
+</html>      
