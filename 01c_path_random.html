@@ -1,0 +1,136 @@
+<!DOCTYPE HTML>
+<html>
+
+  <body>
+    <canvas id="myCanvas" width="1000" height="1000"></canvas>
+
+    <script>
+
+		// get the context
+		var canvas = document.getElementById("myCanvas");
+		var context = canvas.getContext('2d');
+		var frameCount = 0;
+		var polygons = [];
+
+
+		// constrain value between min and max
+		function constrain (x, min, max) {		
+			if (x<min) return min;
+			if (x>max) return max;
+			return x;
+		}
+
+		function blend (x0, x1, t) {
+			return (1-t)*x0 + t*x1;
+		}
+
+		// polygon class ctor, n points radius r and initial 
+		// random phase
+		var Polygon = function (x, y, n, r, phi0=Math.random()*0.5) {
+			
+			this.n = n;
+			this.r = r;
+			this.x = x;
+			this.y = y;
+
+			// use progress variable to controll how many
+			// points should be drawn
+			this.progress = 0;
+
+			this.points = [];
+			this.rand = [];
+			this.rand_res = 20;
+
+			// precalculate random values
+			for (var i=0; i<n/this.rand_res; i++) {
+				this.rand[i] = Math.random();
+			}
+
+			// create points angle 0...4*PI results
+			// in double drawn outline
+			for (var i=0; i<n+1; i++) {
+				var phi = Math.PI * 2 * i / this.n + phi0;
+				
+				// get to lowres random values
+				var r0 = this.rand[Math.floor(i/this.rand_res)];
+				var r1 = this.rand[Math.floor(i/this.rand_res)+1];
+						
+				// linear interpolate between rand values
+				t = (i%this.rand_res) / (this.rand_res-1);
+				var rand = blend(r0, r1, t);
+
+				R = this.r * (0.8+0.05*rand);
+				var point = {
+					x : R*Math.sin(phi),
+					y : R*Math.cos(phi)
+				};
+				this.points.push(point);
+			}
+		}
+
+		Polygon.prototype.update = function () {
+			if (Math.random()<0.9) {
+					this.progress = constrain (this.progress+1,
+				                        	0, this.points.length-1);
+			}
+		}
+
+		// iterate points and draw
+		Polygon.prototype.draw = function (time) {
+			
+			context.save();
+			context.translate(this.x, this.y);
+			context.beginPath();
+			for (var i=0; i<this.progress; i++) {
+				context.lineTo(this.points[i].x, this.points[i].y);
+			}
+			context.stroke();
+			context.restore();
+		}
+
+
+
+		// create 300 polygons with 300 edges
+		var setup = function() {
+	
+			for (var j=0; j<100; j++) {
+
+				var x = 400;
+				var y = 400;
+				var N = 1000 // +j%4;
+
+				// radius is not linear dependent on j
+				// the sin yields more large radiuses
+				var R = 150+Math.sin(j*0.05)*250; //Math.random()*50+50;
+				polygons[j] = new Polygon(x, y, N, R);
+			}
+		}	
+
+    	var draw = function() {
+
+    		// clear canvas
+    		context.fillStyle = "rgba(255,255,255,1.0)";
+    		context.fillRect (0, 0, canvas.width, canvas.height);
+
+			
+    		for (var i=0; i<polygons.length; i++) {			
+				polygons[i].draw(frameCount);
+				polygons[i].update();
+    		}
+
+			frameCount = frameCount+1;
+
+			// when drawing ready request next frame
+        	requestAnimationFrame(draw);
+        };
+
+        setup();
+      	draw();
+		
+
+
+    </script>
+
+  </body>
+
+</html>      

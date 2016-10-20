@@ -1,0 +1,70 @@
+<!DOCTYPE HTML>
+<html>
+
+  <body>
+    <canvas id="myCanvas" width="1600" height="1000"></canvas>
+
+    <script>
+
+		var canvas = document.getElementById("myCanvas");
+		var context = canvas.getContext('2d');
+		var frameCount = 0;
+	
+
+    var N = 80;
+
+
+    function rgb(r, g, b) {
+      context.fillStyle = "rgb("+r+","+b+","+g+")";
+    }
+ 
+    var draw = function() {
+
+      context.fillStyle = "#000000";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      context.strokeStyle = "#0f0";
+      context.fillStyle = "#0f0";
+      context.lineWidth = 1;
+
+      for (var i=0; i<N; i++) {
+        for (var j=0; j<N; j++) {
+
+          var x = i*canvas.width / N;
+          var y = j*canvas.height / N;
+
+          var w0 = 2*Math.PI / 100;
+          var w1 = 2*Math.PI / 1000;
+          //w1 = Math.sin(frameCount*2*Math.PI/500)*0.01+0.01;
+
+          //w0 = (Math.sin(w1*y)*0.5+0.5)*0.01 + 0.001;
+          //w0 = w0*2*Math.PI;
+
+          var phi = 2*Math.PI*frameCount / 100 * Math.sin(y*0.004);
+
+          var A0 = 10;
+
+          var W = (Math.sin(w0*x+phi)*0.5+0.5) * A0;
+          var H = A0;
+
+          var r = Math.round(50+W*13);
+          var g = Math.round(Math.sin(frameCount*0.01+x*0.003)*100+100);
+          var b = 100;
+          rgb(r,g,b);
+
+          context.fillRect (x, y, W, H);
+
+        }
+      }
+
+      frameCount = frameCount+1;
+      requestAnimationFrame(draw);
+    };
+
+    draw();
+
+    </script>
+
+  </body>
+
+</html>      
