@@ -3,13 +3,14 @@
 
   <body>
     <canvas id="myCanvas" width="1000" height="1000"></canvas>
+    <script type="text/javascript" src="gg_util_functions.js"></script>
 
     <script>
 
 		var canvas = document.getElementById("myCanvas");
 		var context = canvas.getContext('2d');
 		var frameCount = 0;
-		
+
     context.fillStyle = "#000000";
     context.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -26,11 +27,11 @@
       }
     }
 
-    
+
     Scope.prototype.draw = function() {
       for (var ch=0; ch<this.nch; ch++) {
         context.beginPath();
-      
+
         for (var i=0; i<this.l; i++) {
           context.lineTo (i,this.data[ch][i]+ch*130);
         }
@@ -43,44 +44,31 @@
     }
 
 
-    
+
     var sc = new Scope(600, 2);
-    var setup = function() { 
-    
+    var setup = function() {
+
     }
 
-    function saw (phase) {
-      return (phase % (Math.PI*2)) / 2 / Math.PI;
-    }
-
-    var constrain = function (v, min, max) {
-      if (v<min) return min;
-      if (v>max) return max;
-      return v;
-    }
-
-    var blend = function (v0, v1, t) {
-      return (1-t)*v0 + t*v1;
-    }
+    var simpleNoise = new SimpleNoise(1000);
 
     var update = function() {
 
-      var f = 0.04;
+      var f = 0.01;
       var A = 50;
       var v;
 
       v = Math.sin(frameCount*f)*A;
       sc.addDataPoint(v,0);
 
-      var v1 = saw(f*3*frameCount)*100;
+      var v1 = simpleNoise.getValue(frameCount*f)*A;
 
       // scale + offset t in range
-      t = Math.sin(frameCount*0.002+Math.PI*3/2)*0.5+0.5;
-
+      /*
+      t = Math.sin(frameCount*0.002+Math.PI*3/2)*0.5+0.5
       var vblend = blend(v, v1, t);
-
-      sc.addDataPoint(vblend,1);
-      
+      */
+      sc.addDataPoint(v1,1);
       sc.index = (sc.index+1)%sc.l;
 
       frameCount = frameCount+1;
@@ -113,4 +101,4 @@
 
   </body>
 
-</html>      
+</html>

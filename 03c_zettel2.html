@@ -1,0 +1,234 @@
+<!DOCTYPE HTML>
+<html>
+
+<body>
+    <canvas id="myCanvas" width="1400" height="1000"></canvas>
+    <script type="text/javascript" src="gg_util_perlin.js"></script>
+    <script type="text/javascript" src="gg_util_functions.js"></script>
+
+    <script>
+        var canvas = document.getElementById("myCanvas");
+        var context = canvas.getContext('2d');
+        var frameCount = 0;
+        var t = 0;
+
+
+        var RendererA = function() {
+            this.R = 20;
+            this.w = 10;
+            this.h = 10;
+            this.cx = canvas.width/2;
+            this.cy = canvas.height/2;
+        }
+
+        RendererA.prototype.update = function(time) {
+            this.t = time;
+            f = 3 + Math.floor((time * 0.4) % 2) * 15;
+            this.w = Math.sin(f * time) * 5 + 5;
+        }
+
+        RendererA.prototype._draw = function(x, y) {
+
+            var g = 200;
+            var b = Math.sin(t*2+y*0.01+Math.PI/2)*50+200;
+            setFillColor (100, g, b);
+
+            var dist = Math.sqrt(Math.pow(x-this.cx, 2)+Math.pow(y-this.cy, 2));
+            dist *= (1*t*0.001);
+            this.w = Math.sin(dist+t)*8+8;
+            context.fillRect(x, y, this.w, this.w);
+        }
+
+
+
+        var RendererB = function() {}
+
+        RendererB.prototype.update = function(time) {
+            this.w = 50 - time * 3;
+            this.h = 30 - time * 3;
+        }
+
+        RendererB.prototype._draw = function(x, y) {
+
+            context.save();
+            context.translate(x, y);
+            for (var i = 0; i < 5; i++) {
+                var s = (5 - i /*+ Math.sin(x*0.3)*10*/) / 5; //*5*Math.sin(x*0.1+y+t);
+
+                context.rotate(4.72 * Math.sin(t * 0.1));
+                //context.translate(-50, -25);
+                setFillColor(i * 40, 0, 0);
+                context.fillRect(0, 0, s * this.w, s * this.h);
+            }
+            context.restore();
+        }
+
+
+        var RendererC = function() {
+            this.R = 0;
+            this.rand = [];
+            for (var i = 0; i < 20; i++) {
+                this.rand[i] = Math.random();
+            }
+        }
+
+        RendererC.prototype.update = function(time) {}
+
+        RendererC.prototype._draw = function(x, y) {
+
+            var r = noise.simplex2(x * 0.1, 0) * 100 + 100;
+            var g = 0;
+            var b = 100;
+
+            setStrokeColor(r, g, b);
+
+            var x1 = x;
+            var y1 = y;
+
+            setFillColor(0,0,0);
+
+            var r0 = this.rand[Math.round(x * 0.01) % this.rand.length];
+            var r1 = this.rand[Math.round(x * 0.004) % this.rand.length];
+            var r2 = this.rand[Math.round(y * 0.01) % this.rand.length];
+
+            var yO = t*800 - r0*2000  - r2*2000 - 14000;
+            if (yO<0) yO=0;
+
+
+            context.fillRect(x, y+yO, 24, 24);
+
+            context.beginPath();
+            context.moveTo(x1 + rr, y1);
+
+            var nn = 3;
+
+
+            var NN = (y*0.007+t*r0)%3;
+
+
+            for (var j = 0; j < NN; j++) {
+                var rr = 18 - j * 4;
+                for (var i = 0; i < nn + 1; i++) {
+                    var x2 = x + rr * Math.sin(i / nn * 2 * Math.PI);
+                    var y2 = y + rr * Math.cos(i / nn * 2 * Math.PI) + yO;
+                    context.lineTo(x2, y2);
+                }
+                context.stroke();
+            }
+        }
+
+
+        var RendererD = function() {
+          this.cx = canvas.width / 2;
+          this.cy = canvas.height / 2;
+        }
+
+        RendererD.prototype.update = function(time) {
+        }
+
+        RendererD.prototype._draw = function(x, y) {
+          setFillColor(255,255,255);
+
+
+          for (var i=0; i<12; i++){
+
+            var R = 80 + i*40;
+            var x1 = R*Math.sin(x*0.0001 + y*0.006) + this.cx;
+            var y1 = R*Math.cos(x*0.0001 + y*0.006) + this.cy;
+
+            var b = Math.sin(y*0.01+t*2)*100+100;
+            setBrightness(b);
+
+            var t1 = (t-i*0.4-20)*1.2;
+            t1 = constrain(t1, 0, 1);
+            var x2 = blend (x, x1, t1);
+            var y2 = blend (y, y1, t1);
+
+            var x3 = y / canvas.height * canvas.width * 0.7 + 250;
+            var y3 = x / canvas.width * canvas.height* 0.3 + 200 + Math.sin(t*0.2)*200 + Math.sin(x*0.02)*40;
+
+            var t2 = (t-5-20)*0.5;
+            t2 = constrain(t2, 0, 1);
+            x2 = blend (x2, x3, t2);
+            y2 = blend (y2, y3, t2);
+            context.fillRect(x2,y2,3,3);
+          }
+        }
+
+        var RendererE = function() {
+          this.cx = canvas.width / 2;
+          this.cy = canvas.height / 2;
+        }
+
+        RendererE.prototype.update = function(time) {
+
+        }
+
+        RendererE.prototype._draw = function(x, y) {
+
+        }
+
+        var N = 0;
+        var renderers = [];
+        renderers.push(new RendererA());
+        renderers.push(new RendererB());
+        renderers.push(new RendererC());
+        renderers.push(new RendererD());
+
+        var update = function() {
+            t = performance.now() / 1000.0;
+            for (var i=0; i<renderers.length; i++)
+              renderers[i].update(t);
+
+            N = Math.round(t * 4) + 20;
+            if (N > 60) N = 60;
+        }
+
+
+
+        var draw = function() {
+            update();
+            context.fillStyle = "rgba(0,0,0,1)"
+            context.fillRect(0, 0, canvas.width, canvas.height);
+
+            context.fillStyle = "#fff";
+            context.strokeStyle = "#fff";
+          //N = 60;
+
+            for (var i = 0; i < N; i++) {
+                for (var j = 0; j < N; j++) {
+
+                    var progressL = t * 4 + noise.simplex2(j * 0.1, 0) * 4 - 5;
+                    var progressR = N - t * 4 + noise.simplex2(j * 0.1, 10) * 4 + 5;
+
+                    var x = canvas.width / N * i;
+                    var y = canvas.height / N * j;
+
+                    var p2 = (t - 12.5) * 0.3;
+                    if (p2 < 0) p2 = 0;
+                    var th2 = noise.simplex2(i * 0.1, j * 0.1) * 0.5 + 0.5;
+
+
+                    if (p2<th2) {
+                      if (i<progressL || i>progressR)
+                        renderers[0]._draw(x,y);
+                      else
+                        renderers[1]._draw(x,y);
+                    }
+
+                    else {
+                      renderers[2]._draw(x,y);
+                      renderers[3]._draw(x,y);
+                    }
+                }
+            }
+
+            requestAnimationFrame(draw);
+        };
+
+        draw();
+    </script>
+
+</body>
+
+</html>
