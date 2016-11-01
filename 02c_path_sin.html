@@ -1,0 +1,154 @@
+<!DOCTYPE HTML>
+<html>
+
+  <body>
+
+    <script type="text/javascript" src="gg_util_functions.js"></script>
+    <canvas id="myCanvas" width="1000" height="1000"></canvas>
+
+    <script>
+
+		// get the context
+		var canvas = document.getElementById("myCanvas");
+		var context = canvas.getContext('2d');
+		var frameCount = 0;
+		var polygons = [];
+
+    // initalize simple noise object with 1000 values
+    var simpleNoise = new SimpleNoise(1000);
+
+
+		// constrain value between min and max
+		function constrain (x, min, max) {
+			if (x<min) return min;
+			if (x>max) return max;
+			return x;
+		}
+
+		function blend (x0, x1, t) {
+			return (1-t)*x0 + t*x1;
+		}
+
+		// polygon class ctor, n points radius r and initial
+		// random phase
+
+		var Polygon = function (x, y, n, r, phi0=Math.random()*0.5) {
+
+
+			this.n = n;
+			this.r = r;
+			this.x = x;
+			this.y = y;
+
+			// use progress variable to controll how many
+			// points should be drawn
+			this.progress = 0;
+
+			this.points = [];
+      this.n = 400;
+
+			for (var i=0; i<this.n+1; i++) {
+
+        // angle for large circle
+        var phi = Math.PI * 2 * i / this.n + phi0;
+
+        // angle for sin offset
+        var f2 = 10;
+        var phi2 = Math.PI * 2 * i / this.n * f2;
+        var sinOffset = (Math.sin(phi2))*0.1;
+
+
+        f2 = 150;
+        phi2 = Math.PI * 2 * i / this.n * f2;
+        sinOffset += (Math.sin(phi2))*0.02;
+
+
+        // use precalculated random values
+        var f_rand = 10;
+        var phi_r = Math.round(i / this.n * f_rand);
+        var randOffset = simpleNoise.getValue(phi_r)*0.3;
+
+        f_rand = 200;
+        phi_r = Math.round(i / this.n * f_rand);
+        randOffset += simpleNoise.getValue(phi_r)*0.04;
+
+
+
+        R = this.r * (1 + randOffset);
+				var point = {
+					x : R*Math.sin(phi),
+					y : R*Math.cos(phi)
+				};
+				this.points.push(point);
+			}
+		}
+
+		Polygon.prototype.update = function () {
+			if (Math.random()<1.0) {
+					this.progress = constrain (this.progress+1,
+				                        	0, this.points.length-1);
+			}
+		}
+
+		// iterate points and draw
+		Polygon.prototype.draw = function (time) {
+
+			context.save();
+			context.translate(this.x, this.y);
+			context.beginPath();
+			for (var i=0; i<this.progress; i++) {
+				context.lineTo(this.points[i].x, this.points[i].y);
+			}
+			context.stroke();
+			context.restore();
+		}
+
+
+
+		// create 300 polygons with 300 edges
+		var setup = function() {
+
+			for (var j=0; j<1; j++) {
+
+				var x = 600;
+				var y = 400;
+				var N = 1000 // +j%4;
+
+				// radius is not linear dependent on j
+				// the sin yields more large radiuses
+				var R = 200; //150+Math.sin(j*0.05)*250; //Math.random()*50+50;
+				polygons[j] = new Polygon(x, y, N, R);
+			}
+		}
+
+    	var draw = function() {
+
+    		// clear canvas
+    		context.fillStyle = "rgba(255,255,255,1.0)";
+    		context.fillRect (0, 0, canvas.width, canvas.height);
+
+
+    		for (var i=0; i<polygons.length; i++) {
+				polygons[i].draw(frameCount);
+				polygons[i].update();
+        polygons[i].update();
+        polygons[i].update();
+        polygons[i].update();
+    		}
+
+			frameCount = frameCount+1;
+
+			// when drawing ready request next frame
+        	requestAnimationFrame(draw);
+        };
+
+        setup();
+      	draw();
+
+
+
+    </script>
+
+  </body>
+
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE HTML>
+<html>
+
+  <body>
+    <canvas id="myCanvas" width="1000" height="1000"></canvas>
+    <script type="text/javascript" src="gg_util_perlin.js"></script>
+    <script>
+
+		var canvas = document.getElementById("myCanvas");
+		var context = canvas.getContext('2d');
+		var frameCount = 0;
+
+    var t = 0;
+    var Particle = function (x,y) {
+      this.pos = {x:x, y:y};
+      this.vel = {x:0,y:0};
+    }
+
+    Particle.prototype.update = function (force) {
+      this.vel.x += force.x;
+      this.vel.y += force.y;
+      this.pos.x += this.vel.x;
+      this.pos.y += this.vel.y;
+    }
+
+    Particle.prototype.draw = function() {
+      context.fillRect(this.pos.x, this.pos.y, 1, 1);
+    }
+
+    var particles = [];
+    function initParticles(N) {
+      for (var i=0; i<N; i++) {
+        for (var j=0; j<N; j++) {
+          var x = canvas.width * i / N;
+          var y = canvas.height * j / N;
+          particles.push(new Particle(x,y));
+        }
+      }
+    }
+
+    function drawParticles() {
+
+    for (var i=0; i<particles.length; i++) {
+        var p = particles[i];
+        var sc = 0.003;
+        var f = {
+          x: noise.simplex3 (p.pos.x*sc, p.pos.y*sc,0)*0.001,
+          y: noise.simplex3 (p.pos.x*sc, p.pos.y*sc,10)*0.001
+        }
+
+        p.update(f);
+    }
+
+      for (var i=0; i<particles.length; i++)
+        particles[i].draw();
+    }
+
+
+
+
+    function drawCurves() {
+      for (var i=0; i<5; i++) {
+        for (var j=0; j<1000; j++) {
+          var x = j;
+          var y = noise.simplex2(j*0.01,t+i*t*0.1)*30+30+i*50;
+          context.fillRect(x,y,1,1);
+        }
+      }
+    }
+
+    function drawVectors() {
+      var N = 40;
+      var R = 20;
+      context.beginPath();
+      for (var i=0; i<N; i++) {
+        for (var j=0; j<N; j++) {
+          var x = canvas.width * i / N;
+          var y = canvas.height * j / N;
+
+          var phi = noise.simplex3(i*0.1,j*0.1,t);
+          var dx = R*Math.sin(phi);
+          var dy = R*Math.cos(phi);
+          context.moveTo (x-dx/2, y-dy/2);
+          context.lineTo (x+dx/2, y+dy/2);
+        }
+      }
+      context.stroke();
+    }
+
+    var setup = function() {
+      initParticles(100);
+    }
+
+    var draw = function() {
+
+      context.fillStyle = "rgba(0,0,0,0.1)"
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      context.fillStyle = "#fff";
+      context.strokeStyle = "#fff";
+
+      drawParticles();
+
+      t += 0.01;
+      requestAnimationFrame(draw);
+    };
+
+    setup();
+    draw();
+
+    </script>
+
+  </body>
+
+</html>
