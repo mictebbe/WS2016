@@ -12,6 +12,18 @@ var blend = function (v0, v1, t) {
   return (1-t)*v0 + t*v1;
 }
 
+var blendArr = function (a0, a1, t) {
+    var ret = [];
+    for (var i=0; i<a0.length; i++) {
+      ret[i] = {
+        x: blend(a0[i].x, a1[i].x, t),
+        y: blend(a0[i].y, a1[i].y, t)
+      }
+    }
+    return ret;
+}
+
+
 function setBrightness (b) {
   b = Math.round(b);
   context.fillStyle = "rgb("+b+", "+b+", "+b+")";

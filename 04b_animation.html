@@ -1,0 +1,85 @@
+<!DOCTYPE HTML>
+<html>
+
+  <head>
+    <script type="text/javascript" src="gg_util_functions.js"></script>
+    <script>
+
+    var N = 1000;
+
+    // VARIABLES
+    var canvas;
+    var context;
+    var frequencies = [];
+    var Amplitudes = [];
+
+    var N_SPIRALS = 20;
+
+    var init = function() {
+      canvas = document.getElementById("myCanvas");
+      context = canvas.getContext('2d');
+
+      for (var i=0; i<N; i++) {
+        frequencies[i] = Math.random()*0.1;
+        Amplitudes[i] = Math.random()*200+200;
+      }
+    }
+
+
+    var draw = function() {
+
+      var time = performance.now() / 1000.0;
+
+      context.fillStyle = "#000";
+      context.fillRect (0, 0, canvas.width, canvas.height);
+      context.strokeStyle = "#fff";
+
+
+      var scale = 1 / 2;
+      var t = (time - 0);
+      if (t<0) t=0;
+
+      var index = Math.floor(t * scale)%(N_SPIRALS-1);
+      var t_blend = (t*scale - index) % 1;
+      var f0 = frequencies[index];
+      var f1 = frequencies[index+1];
+
+      var A0 = Amplitudes[index];
+      var A1 = Amplitudes[index+1];
+      var ftmp = blend (f0, f1, t_blend); //0.1 + time*0.01;
+      var A = blend(A0, A1, t_blend);
+
+      context.save();
+      context.translate(canvas.width/2, canvas.height/2);
+
+      context.beginPath();
+
+      for (var n=0; n<N; n++) {
+        var Atmp = A*n/N;
+
+        context.lineTo (Atmp*Math.sin(ftmp*n),
+                        Atmp*Math.cos(ftmp*n));
+      }
+
+      context.stroke();
+      context.restore();
+
+      requestAnimationFrame(draw);
+    };
+
+    </script>
+  </head>
+
+  <body>
+
+
+    <canvas id="myCanvas" width="1200" height="900"></canvas>
+
+    <script>
+      init();
+      draw();
+    </script>
+
+  </body>
+
+</html>
