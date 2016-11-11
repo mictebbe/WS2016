@@ -1,0 +1,262 @@
+<html>
+  <body>
+    <script src="three.min.js"></script>
+    <script src="gg_util_perlin.js"></script>
+    <script src="gg_util_vector.js"></script>
+
+      <script id="vertexShader" type="x-shader/x-vertex">
+
+        precision mediump float;
+        precision mediump int;
+
+        // comes with framework
+        uniform mat4 modelViewMatrix; // optional
+        uniform mat4 projectionMatrix; // optional
+
+        // user defined uniforms, values are passed in runtime
+        uniform float time;
+
+        // user defined attributes
+        attribute vec3 position;
+        attribute vec4 color;
+        attribute vec3 normal;
+
+        // data to be passed to fragment shader
+        varying vec3 v_position;
+        varying vec4 v_color;
+        varying vec3 v_normal;
+
+        void main() {
+
+          vec4 positionNew = vec4 (position, 1.0);
+
+          // calcuate pixel position on screen and pass to fragment shader
+          gl_Position = projectionMatrix * modelViewMatrix * positionNew;
+
+          // pass world coords position to fragment shader
+          v_position = positionNew.xyz;
+
+          // pass color to fragment shader
+          v_color = color;
+
+          v_normal = normal;
+        }
+
+        </script>
+
+        <script id="fragmentShader" type="x-shader/x-fragment">
+
+          precision mediump float;
+          precision mediump int;
+
+          // input from vertex shader
+          varying vec3 v_position;
+          varying vec4 v_color;
+          varying vec3 v_normal;
+
+          uniform float time;
+
+          void main() {
+            float t = time*0.001;
+            vec3 sunDir = vec3(0.7, 0.7, 0.0);
+            float b = dot(sunDir, v_normal);
+            gl_FragColor = vec4 (b, b, b, 1.0);
+          }
+        </script>
+
+    <script>
+
+    var scene;
+    var camera;
+    var mesh;
+    var material;
+    var renderer;
+
+    var MAX_VERTICES = 1024*1024;
+    var n_vertices = 0;
+
+    var positions = new Float32Array (MAX_VERTICES*3);
+    var colors    = new Float32Array (MAX_VERTICES*4);
+    var normal    = new Float32Array (MAX_VERTICES*3);
+
+
+    function getHeight (x, y) {
+      var f = 0.003;
+      var f1 = 0.02;
+      var f2 = 0.3;
+      return noise.simplex2 (x*f, y*f)*60 +
+             noise.simplex2 (x*f1, y*f1)*10 +
+             noise.simplex2 (x*f2, y*f2)*0;
+    }
+
+    function getNormal (x, y) {
+
+      var dd = 1.000001;
+      var p0 = new Vector3 (x, y, getHeight(x,y));
+      var p1 = new Vector3 (x*dd, y, getHeight(x*dd, y));
+      var p2 = new Vector3 (x*dd, y*dd, getHeight(x*dd, y*dd));
+
+      return p2.sub(p0).cross(p1.sub(p2)).normalize();
+    }
+
+
+
+    var addQuad = function (x, y, w, h) {
+
+      // 0, 0
+      positions [n_vertices*3+0] = x;
+      positions [n_vertices*3+1] = y;
+      positions [n_vertices*3+2] = getHeight (x, y);
+
+      colors[n_vertices*4]   = 1.0;
+      colors[n_vertices*4+1] = 0.0;
+      colors[n_vertices*4+2] = 0.0;
+      colors[n_vertices*4+3] = 1.0;
+
+      normal [n_vertices*3+0] = getNormal(x, y).x;
+      normal [n_vertices*3+1] = getNormal(x, y).y;
+      normal [n_vertices*3+2] = getNormal(x, y).z;
+      n_vertices += 1;
+
+      // w, 0
+      positions [n_vertices*3+0] = x+w;
+      positions [n_vertices*3+1] = y;
+      positions [n_vertices*3+2] = getHeight (x+w, y);
+
+      colors[n_vertices*4+0] = 0.0;
+      colors[n_vertices*4+1] = 1.0;
+      colors[n_vertices*4+2] = 1.0;
+      colors[n_vertices*4+3] = 1.0;
+
+      normal [n_vertices*3+0] = getNormal(x+w, y).x;
+      normal [n_vertices*3+1] = getNormal(x+w, y).y;
+      normal [n_vertices*3+2] = getNormal(x+w, y).z;
+      n_vertices += 1;
+
+      // w, w
+      positions [n_vertices*3+0] = x+w;
+      positions [n_vertices*3+1] = y+h;
+      positions [n_vertices*3+2] = getHeight (x+w, y+h);
+
+      colors[n_vertices*4+0] = 1.0;
+      colors[n_vertices*4+1] = 1.0;
+      colors[n_vertices*4+2] = 1.0;
+      colors[n_vertices*4+3] = 1.0;
+
+      normal [n_vertices*3+0] = getNormal(x+w, y+h).x;
+      normal [n_vertices*3+1] = getNormal(x+w, y+h).y;
+      normal [n_vertices*3+2] = getNormal(x+w, y+h).z;
+      n_vertices += 1;
+
+      //
+      positions [n_vertices*3+0] = x;
+      positions [n_vertices*3+1] = y;
+      positions [n_vertices*3+2] = getHeight (x, y);
+
+      colors[n_vertices*4+0] = 0.0;
+      colors[n_vertices*4+1] = 1.0;
+      colors[n_vertices*4+2] = 0.0;
+      colors[n_vertices*4+3] = 1.0;
+
+      normal [n_vertices*3+0] = getNormal(x, y).x;
+      normal [n_vertices*3+1] = getNormal(x, y).y;
+      normal [n_vertices*3+2] = getNormal(x, y).z;
+      n_vertices += 1;
+
+      // w, 0
+      positions [n_vertices*3+0] = x+w;
+      positions [n_vertices*3+1] = y+h;
+      positions [n_vertices*3+2] = getHeight (x+w, y+h);
+
+      colors[n_vertices*4+0] = 1.0;
+      colors[n_vertices*4+1] = 1.0;
+      colors[n_vertices*4+2] = 1.0;
+      colors[n_vertices*4+3] = 1.0;
+
+      normal [n_vertices*3+0] = getNormal(x+w, y+h).x;
+      normal [n_vertices*3+1] = getNormal(x+w, y+h).y;
+      normal [n_vertices*3+2] = getNormal(x+w, y+h).z;
+      n_vertices += 1;
+
+      // w, w
+      positions [n_vertices*3+0] = x;
+      positions [n_vertices*3+1] = y+h;
+      positions [n_vertices*3+2] = getHeight (x, y+h);
+
+      colors[n_vertices*4+0] = 1.0;
+      colors[n_vertices*4+1] = 1.0;
+      colors[n_vertices*4+2] = 0.0;
+      colors[n_vertices*4+3] = 1.0;
+
+      normal [n_vertices*3+0] = getNormal(x, y+h).x;
+      normal [n_vertices*3+1] = getNormal(x, y+h).y;
+      normal [n_vertices*3+2] = getNormal(x, y+h).z;
+      n_vertices += 1;
+    }
+
+
+    function init_gl() {
+
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera (70, window.innerWidth/window.innerHeight, 0.1, 50000);
+
+      // default params
+      renderer = new THREE.WebGLRenderer();
+      renderer.setSize (window.innerWidth, window.innerHeight);
+      document.body.appendChild (renderer.domElement);
+
+      material = new THREE.RawShaderMaterial ({
+                            uniforms: {
+                              time: { type: "f", value: 1.0 }
+                            },
+                            vertexShader: document.getElementById ('vertexShader').textContent,
+                            fragmentShader: document.getElementById ('fragmentShader').textContent,
+                            side: THREE.DoubleSide,
+                            transparent: true
+                        });
+
+      var geometry = new THREE.BufferGeometry();
+
+      geometry.addAttribute ("position", new THREE.BufferAttribute (positions, 3));
+      geometry.addAttribute ("color",    new THREE.BufferAttribute (colors, 4));
+      geometry.addAttribute ("normal",   new THREE.BufferAttribute (normal, 3));
+
+      mesh = new THREE.Mesh (geometry, material);
+
+      scene.add(mesh);
+    }
+
+    function init_model() {
+
+      var w = 2;
+      var N = 200;
+      for (var i=0; i<N; i++) {
+        for (var j=0; j<N; j++) {
+          addQuad ((i-N/2)*w, (j-N/2)*w, w*1.0, w*1.0);
+        }
+      }
+    }
+
+    var render = function () {
+
+      var time = performance.now();
+
+      camera.position.x = 10; //time*0.00;
+      camera.position.y = -400; //-time*0.1;
+      camera.position.z = 200; //1000-time*0.1;
+
+      camera.lookAt (new THREE.Vector3 (0,0,0));
+
+      mesh.material.uniforms.time.value = time;
+
+      requestAnimationFrame (render);
+      renderer.render (scene, camera);
+    };
+
+    init_model();
+    init_gl();
+    render();
+
+    </script>
+  </body>
+  </html>
