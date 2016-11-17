@@ -1,0 +1,15 @@
+{
+  "name": "07_restify",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodejs index.js"
+  },
+  "author": "maxg",
+  "license": "BSD-2-Clause",
+  
+  "dependencies" : {
+    "restify" : "latest"
+  }
+}

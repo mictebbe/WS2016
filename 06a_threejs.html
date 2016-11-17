@@ -4,12 +4,9 @@
 
       <script id="vertexShader" type="x-shader/x-vertex">
 
-        precision mediump float;
-        precision mediump int;
-
         // comes with framework
-        uniform mat4 modelViewMatrix; // optional
-        uniform mat4 projectionMatrix; // optional
+        uniform mat4 modelViewMatrix;
+        uniform mat4 projectionMatrix;
 
         // user defined uniforms, values are passed in runtime
         uniform float time;
@@ -61,6 +58,7 @@
     var mesh;
     var material;
     var renderer;
+    var texture = new THREE.TextureLoader().load("lena.jpg  ");
 
     var MAX_VERTICES = 256*256;
     var n_vertices = 0;
