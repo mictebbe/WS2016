@@ -1,0 +1,104 @@
+<!DOCTYPE HTML>
+<html>
+
+  <body>
+    <canvas id="myCanvas" width="1400" height="1000"></canvas>
+    <script type="text/javascript" src="gg_util_perlin.js"></script>
+    <script type="text/javascript" src="gg_util_functions.js"></script>
+    <script type="text/javascript" src="gg_util_vector.js"></script>
+
+    <script>
+
+		var canvas = document.getElementById("myCanvas");
+		var context = canvas.getContext('2d');
+    var t = 0;
+
+    var N = 200;
+    var w = canvas.width / N;
+    var h = canvas.height / N;
+
+    var textureData = [];
+    var gradientData = [];
+    var sunPos;
+    var sunDir;
+
+    var sobelKernelX = [
+      [-1, 0, 1],
+      [-2, 0, 2],
+      [-1, 0, 1]
+    ];
+
+    var sobelKernelY = [
+      [-1, -2, -1],
+      [0, 0, 0],
+      [1, 2, 1]
+    ];
+
+    var setup = function() {
+
+      sunPos = new Vector2 (0,0);
+      sunDir = new Vector2 (0,0);
+
+      var f0 = 0.02;
+      var f1 = 0.15;
+
+      for (var i=0; i<N; i++) {
+        textureData[i] = [];
+        gradientData[i] = [];
+        for (var j=0; j<N; j++) {
+          textureData[i][j] = noise.simplex2(i*f0, j*f0)*0.5+0.5;
+          textureData[i][j] *= Math.sin(i*0.1+j*0.1)*0.5+0.5;
+
+          textureData[i][j] += noise.simplex2(i*f1, j*f1)*0.01+0.01;
+
+          gradientData[i][j] = new Vector2(0,0);
+        }
+      }
+
+      for (var i=1; i<N-1; i++) {
+        for (var j=1; j<N-1; j++) {
+          for (var di=0; di<3; di++) {
+            for (var dj=0; dj<3; dj++) {
+              gradientData[i][j].x += sobelKernelX[di][dj] * textureData[i+di-1][j+dj-1];
+              gradientData[i][j].y += sobelKernelY[di][dj] * textureData[i+di-1][j+dj-1];
+            }
+          }
+        }
+      }
+    }
+
+
+    function draw() {
+      context.fillStyle = "rgba(0,0,0,1)"
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      for (var i=0; i<N; i++) {
+        for (var j=0; j<N; j++) {
+
+          sunDir = sunPos.sub(new Vector2(i,j)).normalize();
+          var b = gradientData[i][j].dot(sunDir)*250+100;
+          setBrightness (b);
+          //setFillColor (gradientData[i][j].x*255, gradientData[i][j].y*255, 0);
+          context.fillRect(i*w, j*h, w, h);
+        }
+      }
+    }
+
+    function update () {
+      t = performance.now() / 1000.0;
+
+      var R = 10000;
+      sunPos.x = R*Math.sin(t);
+      sunPos.y = R*Math.cos(t);
+      draw();
+      requestAnimationFrame(update);
+    };
+
+    setup();
+    update();
+
+    </script>
+
+  </body>
+
+</html>
